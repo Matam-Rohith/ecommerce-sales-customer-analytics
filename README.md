@@ -1,16 +1,9 @@
 # E-Commerce Sales & Customer Analytics Platform
 
-> ⭐ Best Overall Portfolio Project — Skills: Python · SQL · Excel · Power BI · Statistics · Business Analytics · Data Cleaning · KPI Tracking
+> Project — Skills: Python · SQL · Excel · Power BI · Statistics · Business Analytics · Data Cleaning · KPI Tracking
 
 **Live Dashboard:** [View on GitHub Pages](https://matam-rohith.github.io/ecommerce-sales-customer-analytics/dashboard/index.html)
 
-## Business Questions Answered
-- Which products generate maximum revenue?
-- Which customers are most valuable?
-- Customer segmentation using RFM Analysis
-- Sales forecasting with 3-month rolling baseline
-- Profitability analysis by category and product
-- Customer retention via cohort analysis
 
 ## Project Structure
 ```
