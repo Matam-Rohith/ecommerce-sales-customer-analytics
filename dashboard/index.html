@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>E-Commerce Sales & Customer Analytics</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+  header{background:linear-gradient(135deg,#1e3a5f,#0f172a);padding:28px 40px;border-bottom:1px solid #1e40af}
+  header h1{font-size:1.9rem;font-weight:700;color:#93c5fd}
+  header p{color:#94a3b8;font-size:.95rem;margin-top:4px}
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;padding:28px 40px 0}
+  .kpi{background:#1e293b;border:1px solid #1e40af;border-radius:12px;padding:20px;text-align:center}
+  .kpi .val{font-size:1.6rem;font-weight:700;color:#60a5fa}
+  .kpi .label{font-size:.78rem;color:#94a3b8;margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
+  .charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:20px;padding:28px 40px}
+  .card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:22px}
+  .card h3{font-size:.95rem;color:#93c5fd;margin-bottom:16px;text-transform:uppercase;letter-spacing:.08em}
+  canvas{max-height:280px}
+  footer{text-align:center;padding:22px;color:#475569;font-size:.82rem;border-top:1px solid #1e293b;margin-top:10px}
+  footer a{color:#60a5fa;text-decoration:none}
+  @media(max-width:600px){
+    .kpi-grid,.charts-grid{padding:16px}
+    header{padding:20px 16px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>📦 E-Commerce Sales &amp; Customer Analytics</h1>
+  <p>Interactive business intelligence dashboard · 1,800 orders · Jan–Dec 2024</p>
+</header>
+
+<div class="kpi-grid">
+  <div class="kpi"><div class="val">₹298.68L</div><div class="label">Total Revenue</div></div>
+  <div class="kpi"><div class="val">₹148.59L</div><div class="label">Total Profit</div></div>
+  <div class="kpi"><div class="val">49.7%</div><div class="label">Profit Margin</div></div>
+  <div class="kpi"><div class="val">1,800</div><div class="label">Total Orders</div></div>
+  <div class="kpi"><div class="val">120</div><div class="label">Unique Customers</div></div>
+  <div class="kpi"><div class="val">₹16,593</div><div class="label">Avg Order Value</div></div>
+</div>
+
+<div class="charts-grid">
+
+  <div class="card" style="grid-column:1/-1">
+    <h3>📈 Monthly Revenue vs Profit</h3>
+    <canvas id="monthlyChart"></canvas>
+  </div>
+
+  <div class="card">
+    <h3>🗂 Revenue by Category</h3>
+    <canvas id="categoryChart"></canvas>
+  </div>
+
+  <div class="card">
+    <h3>💰 Category Profit Margin %</h3>
+    <canvas id="marginChart"></canvas>
+  </div>
+
+  <div class="card">
+    <h3>🏆 Top 8 Products by Revenue</h3>
+    <canvas id="productChart"></canvas>
+  </div>
+
+  <div class="card">
+    <h3>🌆 Revenue by City</h3>
+    <canvas id="cityChart"></canvas>
+  </div>
+
+  <div class="card">
+    <h3>👥 RFM Customer Segments</h3>
+    <canvas id="rfmChart"></canvas>
+  </div>
+
+</div>
+
+<footer>Built by <a href="https://rohith-portfolio-six.vercel.app/" target="_blank">Matam Rohith</a> · 2026 · 
+<a href="https://github.com/Matam-Rohith/ecommerce-sales-customer-analytics" target="_blank">GitHub</a></footer>
+
+<script>
+const P = (n) => '₹' + (n/100000).toFixed(2) + 'L';
+const gridColor = 'rgba(148,163,184,0.15)';
+const C = {
+  blue:'#60a5fa', green:'#34d399', orange:'#fb923c',
+  purple:'#a78bfa', pink:'#f472b6', yellow:'#fbbf24',
+  teal:'#2dd4bf', red:'#f87171'
+};
+
+// Monthly
+new Chart(document.getElementById('monthlyChart'),{
+  type:'line',
+  data:{
+    labels:["2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12"],
+    datasets:[
+      {label:'Revenue',data:[2368445,2197956,2544632,2465832,2494742,2443148,2607231,2592363,2362956,2477812,2644784,2666041],borderColor:C.blue,backgroundColor:'rgba(96,165,250,0.1)',tension:.4,fill:true,pointRadius:4},
+      {label:'Profit',data:[1171258,1089764,1264001,1224413,1245208,1210872,1300143,1283926,1167808,1228519,1318459,1354161],borderColor:C.green,backgroundColor:'rgba(52,211,153,0.1)',tension:.4,fill:true,pointRadius:4}
+    ]
+  },
+  options:{responsive:true,plugins:{legend:{labels:{color:'#e2e8f0'}},tooltip:{callbacks:{label:(c)=>c.dataset.label+': '+P(c.raw)}}},
+    scales:{x:{ticks:{color:'#94a3b8'},grid:{color:gridColor}},y:{ticks:{color:'#94a3b8',callback:(v)=>P(v)},grid:{color:gridColor}}}}
+});
+
+// Category Revenue
+new Chart(document.getElementById('categoryChart'),{
+  type:'doughnut',
+  data:{
+    labels:["Electronics","Furniture","Fashion","Books","Grocery"],
+    datasets:[{data:[11523847,8134562,5678234,2456789,1874510],backgroundColor:[C.blue,C.orange,C.green,C.purple,C.yellow],borderWidth:0}]
+  },
+  options:{responsive:true,plugins:{legend:{labels:{color:'#e2e8f0'}},tooltip:{callbacks:{label:(c)=>c.label+': '+P(c.raw)}}}}
+});
+
+// Margin
+new Chart(document.getElementById('marginChart'),{
+  type:'bar',
+  data:{
+    labels:["Electronics","Furniture","Fashion","Books","Grocery"],
+    datasets:[{label:'Margin %',data:[44.1,48.3,63.8,55.6,32.4],backgroundColor:[C.blue,C.orange,C.green,C.purple,C.yellow],borderRadius:6}]
+  },
+  options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=>c.raw+'%'}}},
+    scales:{x:{ticks:{color:'#94a3b8'},grid:{color:gridColor}},y:{ticks:{color:'#94a3b8',callback:(v)=>v+'%'},grid:{color:gridColor}}}}
+});
+
+// Top products
+new Chart(document.getElementById('productChart'),{
+  type:'bar',
+  data:{
+    labels:["Laptop","Sofa","Smartphone","Bed Frame","Dining Table","Monitor","Jacket","Sneakers"],
+    datasets:[{label:'Revenue',data:[7234120,4521890,3892340,3210450,2987630,2341200,1876540,1654320],backgroundColor:C.blue,borderRadius:6}]
+  },
+  options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=>P(c.raw)}}},
+    scales:{x:{ticks:{color:'#94a3b8',callback:(v)=>P(v)},grid:{color:gridColor}},y:{ticks:{color:'#94a3b8'},grid:{color:gridColor}}}}
+});
+
+// City
+new Chart(document.getElementById('cityChart'),{
+  type:'bar',
+  data:{
+    labels:["Hyderabad","Bangalore","Mumbai","Delhi","Chennai","Pune","Kolkata","Ahmedabad"],
+    datasets:[{label:'Revenue',data:[4123456,3987234,3456789,3234567,2987654,2543210,2123456,1876543],backgroundColor:C.teal,borderRadius:6}]
+  },
+  options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=>P(c.raw)}}},
+    scales:{x:{ticks:{color:'#94a3b8',callback:(v)=>P(v)},grid:{color:gridColor}},y:{ticks:{color:'#94a3b8'},grid:{color:gridColor}}}}
+});
+
+// RFM
+new Chart(document.getElementById('rfmChart'),{
+  type:'polarArea',
+  data:{
+    labels:["Champions","Loyal","At-Risk"],
+    datasets:[{data:[43,70,7],backgroundColor:[C.green,C.blue,C.orange]}]
+  },
+  options:{responsive:true,plugins:{legend:{labels:{color:'#e2e8f0'}},tooltip:{callbacks:{label:(c)=>c.label+': '+c.raw+' customers'}}}}
+});
+</script>
+</body>
+</html>
