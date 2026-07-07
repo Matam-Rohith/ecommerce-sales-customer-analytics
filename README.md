@@ -7,7 +7,7 @@
 
 An end-to-end business analytics project built to answer real sales and customer questions using Python, SQL, and an interactive web dashboard. The dataset covers 1,800 orders placed across 10 Indian cities throughout 2024, spanning 5 product categories and 120 unique customers.
 
-**Live Dashboard:** [matam-rohith.github.io/ecommerce-sales-customer-analytics](https://matam-rohith.github.io/ecommerce-sales-customer-analytics/)
+**Live Dashboard:** [matam-rohith.github.io/ecommerce-sales-customer-analytics/dashboard/index.html](https://matam-rohith.github.io/ecommerce-sales-customer-analytics/dashboard/index.html)
 
 ---
 
