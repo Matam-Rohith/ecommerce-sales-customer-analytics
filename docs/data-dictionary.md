@@ -1,115 +1,66 @@
-# Data Dictionary
+# RetailIQ Data Dictionary
 
-Definitions for every column in every file in this project.
+## 1. Relational Entities (PostgreSQL / MySQL)
 
----
-
-## Primary Dataset — `data/orders.csv`
-
-1,800 rows. One row per order line item. No null values.
-
-| Column | Type | Range / Values | Description |
+### `customers` (`dim_customers`)
+| Column | Type | Constraints | Description |
 |---|---|---|---|
-| order_id | String | O0001 – O1800 | Unique order identifier. Zero-padded 4-digit number with O prefix. |
-| order_date | Date | 2024-01-01 to 2024-12-31 | Date the order was placed. ISO 8601 format (YYYY-MM-DD). |
-| customer_id | String | C001 – C120 | Unique customer identifier. 120 distinct customers in the dataset. |
-| customer_name | String | — | Customer full name. Indian names used to reflect target market. |
-| city | String | 10 cities | Delivery city. Cities: Hyderabad, Bangalore, Mumbai, Delhi, Chennai, Pune, Kolkata, Ahmedabad, Jaipur, Lucknow. |
-| product_id | String | P001 – P020 | Unique product identifier. 20 distinct products across 5 categories. |
-| product_name | String | — | Product name (e.g., Laptop, Saree, Python Book). |
-| category | String | 5 values | Product category: Electronics, Fashion, Furniture, Books, Grocery. |
-| quantity | Integer | 1 – 4 | Number of units ordered in this line item. |
-| unit_cost | Float (INR) | 80 – 25,000 | Cost price per single unit. Used to calculate profit. |
-| unit_price | Float (INR) | 160 – 45,000 | Selling price per single unit before discount. |
-| discount | Float | 0, 0.05, 0.10, 0.15 | Discount applied to the order. Stored as decimal (0.10 = 10% off). |
-| revenue | Float (INR) | computed | Actual revenue collected. Formula: unit_price × quantity × (1 − discount). |
-| cost | Float (INR) | computed | Total cost. Formula: unit_cost × quantity. |
-| profit | Float (INR) | computed | Net profit on the order. Formula: revenue − cost. |
+| `customer_id` | VARCHAR(10) | PRIMARY KEY | Unique customer identifier (e.g. C001–C120) |
+| `customer_name` | VARCHAR(100) | NOT NULL | Customer full legal name |
+| `email` | VARCHAR(150) | UNIQUE, NOT NULL | Customer contact email |
+| `city` | VARCHAR(50) | NOT NULL | Primary delivery city hub |
+| `state` | VARCHAR(50) | NOT NULL | Indian state/territory |
+| `signup_date` | DATE | NOT NULL | Customer acquisition date (earliest order date) |
+
+### `products` (`dim_products`)
+| Column | Type | Constraints | Description |
+|---|---|---|---|
+| `product_id` | VARCHAR(10) | PRIMARY KEY | Unique catalog SKU (P001–P020) |
+| `product_name` | VARCHAR(100) | NOT NULL | Commercial product name |
+| `category` | VARCHAR(50) | NOT NULL | Product vertical (Electronics, Furniture, Fashion, Books, Grocery) |
+| `cost_price` | DECIMAL(12,2) | NOT NULL | Wholesale procurement unit cost in INR (₹) |
+| `base_price` | DECIMAL(12,2) | NOT NULL | Base catalog selling price in INR (₹) |
+
+### `orders` (`fact_orders`)
+| Column | Type | Constraints | Description |
+|---|---|---|---|
+| `order_id` | VARCHAR(10) | PRIMARY KEY | Unique transaction identifier (O0001–O1800) |
+| `customer_id` | VARCHAR(10) | FOREIGN KEY | References `customers(customer_id)` |
+| `order_date` | DATE | NOT NULL | Transaction fulfillment date |
+| `status` | VARCHAR(20) | DEFAULT 'Completed'| Order lifecycle status |
+| `total_amount` | DECIMAL(12,2) | NOT NULL | Net order invoice amount after discounts (₹) |
+
+### `order_items` (`fact_order_items`)
+| Column | Type | Constraints | Description |
+|---|---|---|---|
+| `order_item_id` | VARCHAR(12) | PRIMARY KEY | Unique line item identifier (OI0001–OI1800) |
+| `order_id` | VARCHAR(10) | FOREIGN KEY | References `orders(order_id)` |
+| `product_id` | VARCHAR(10) | FOREIGN KEY | References `products(product_id)` |
+| `quantity` | INT | NOT NULL | Units purchased (> 0) |
+| `unit_price` | DECIMAL(12,2) | NOT NULL | Selling price per unit (₹) |
+| `discount` | DECIMAL(4,2) | DEFAULT 0.00 | Promotional discount rate (0.00 – 0.15) |
+| `line_total` | DECIMAL(12,2) | NOT NULL | Net line item revenue (₹) |
+| `profit` | DECIMAL(12,2) | NOT NULL | Gross profit: `line_total - (cost_price * quantity)` |
+
+### `payments` (`fact_payments`)
+| Column | Type | Constraints | Description |
+|---|---|---|---|
+| `payment_id` | VARCHAR(12) | PRIMARY KEY | Unique settlement token (PAY0001–PAY1800) |
+| `order_id` | VARCHAR(10) | FOREIGN KEY | References `orders(order_id)` |
+| `payment_date` | DATE | NOT NULL | Settlement date |
+| `payment_method` | VARCHAR(30) | NOT NULL | Settlement instrument (UPI, Credit Card, Net Banking, etc.) |
+| `payment_status` | VARCHAR(20) | DEFAULT 'Success' | Transaction status |
+| `amount` | DECIMAL(12,2) | NOT NULL | Total transaction settlement (₹) |
 
 ---
 
-## Product Reference — 20 Products
+## 2. Analytical & Statistical Metrics
 
-| Product ID | Product Name | Category | Unit Cost (₹) | Unit Price (₹) | Base Margin |
-|---|---|---|---|---|---|
-| P001 | Laptop | Electronics | 25,000 | 45,000 | 44.4% |
-| P002 | Smartphone | Electronics | 12,000 | 22,000 | 45.5% |
-| P003 | Headphones | Electronics | 1,500 | 3,500 | 57.1% |
-| P004 | Keyboard | Electronics | 800 | 1,800 | 55.6% |
-| P005 | Monitor | Electronics | 7,000 | 14,000 | 50.0% |
-| P006 | T-Shirt | Fashion | 200 | 600 | 66.7% |
-| P007 | Jeans | Fashion | 500 | 1,400 | 64.3% |
-| P008 | Sneakers | Fashion | 800 | 2,200 | 63.6% |
-| P009 | Jacket | Fashion | 1,200 | 3,500 | 65.7% |
-| P010 | Saree | Fashion | 900 | 2,800 | 67.9% |
-| P011 | Sofa | Furniture | 8,000 | 18,000 | 55.6% |
-| P012 | Dining Table | Furniture | 5,000 | 12,000 | 58.3% |
-| P013 | Bookshelf | Furniture | 2,000 | 5,000 | 60.0% |
-| P014 | Bed Frame | Furniture | 6,000 | 15,000 | 60.0% |
-| P015 | Rice 5kg | Grocery | 200 | 350 | 42.9% |
-| P016 | Cooking Oil | Grocery | 150 | 250 | 40.0% |
-| P017 | Detergent | Grocery | 80 | 160 | 50.0% |
-| P018 | Python Book | Books | 250 | 600 | 58.3% |
-| P019 | Fiction Novel | Books | 120 | 300 | 60.0% |
-| P020 | Self-Help Book | Books | 150 | 380 | 60.5% |
-
-*Base Margin = (unit_price − unit_cost) / unit_price × 100. Effective margin will differ due to discounts.*
-
----
-
-## Insights Files — `insights/`
-
-### `top_products.csv`
-
-| Column | Description |
-|---|---|
-| product_name | Product name |
-| total_revenue | Sum of revenue across all orders for this product |
-| total_profit | Sum of profit across all orders for this product |
-| order_count | Number of orders containing this product |
-| margin_pct | Effective profit margin % (total_profit / total_revenue × 100) |
-
-### `top_customers.csv`
-
-| Column | Description |
-|---|---|
-| customer_id | Customer identifier |
-| customer_name | Customer full name |
-| city | Customer delivery city |
-| total_orders | Total number of orders placed |
-| total_revenue | Lifetime revenue (LTV) in INR |
-| total_profit | Lifetime profit contribution in INR |
-
-### `rfm_segments.csv`
-
-| Column | Description |
-|---|---|
-| customer_id | Customer identifier |
-| recency_days | Days between last order and reference date (Jan 1, 2025). Lower is better. |
-| frequency | Total orders placed by this customer |
-| monetary | Total amount spent in INR |
-| r_score | Recency score 1–5. 5 = purchased within last 30 days |
-| f_score | Frequency score 1–5. 5 = 20+ orders |
-| m_score | Monetary score 1–5. 5 = spent ₹2L+ |
-| rfm_avg | Average of r_score, f_score, m_score |
-| segment | Champions / Loyal / At-Risk / Potential / Lost |
-
-### `monthly_sales_forecast.csv`
-
-| Column | Description |
-|---|---|
-| month | Month in YYYY-MM format |
-| actual_revenue | Actual total revenue for the month |
-| actual_profit | Actual total profit for the month |
-| rolling_3m_avg | 3-month rolling average revenue. Null for first 2 months. |
-| forecast_flag | `actual` for months with real data, `forecast` for projected months |
-
-### `category_profitability.csv`
-
-| Column | Description |
-|---|---|
-| category | Product category |
-| total_revenue | Total revenue for this category |
-| total_profit | Total profit for this category |
-| margin_pct | Effective margin % after discounts |
-| order_count | Total orders in this category |
+| Metric | Calculation / Formula | Business Meaning |
+|---|---|---|
+| **AOV** | `SUM(Revenue) / COUNT(DISTINCT Order_ID)` | Average revenue per basket |
+| **Gross Margin %** | `SUM(Profit) / SUM(Revenue) * 100` | Operational profitability efficiency |
+| **CLV (24-Mo)** | `AOV * Frequency * Gross Margin % * 1.6` | Projected 2-year forward value of account |
+| **Repeat Rate %** | `COUNT(Repeat Customers) / Total Customers * 100` | Retention & loyalty strength |
+| **Z-Score** | `(Daily_Revenue - Baseline_Mean) / StdDev` | Statistical anomaly outlier detector |
+| **95% CI** | `Forecast ± 1.96 * StdDev * sqrt(step)` | Predictive uncertainty boundary |

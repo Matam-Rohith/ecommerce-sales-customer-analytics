@@ -1,0 +1,8 @@
+{
+  "name": "E-Commerce Sales & Customer Analytics",
+  "description": "Interactive business intelligence dashboard · 1,800 orders · Jan–Dec 2024",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

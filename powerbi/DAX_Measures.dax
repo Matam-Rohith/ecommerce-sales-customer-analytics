@@ -1,0 +1,68 @@
+-- =====================================================================
+-- RETAILIQ ANALYTICS - POWER BI DAX MEASURES SPECIFICATION
+-- =====================================================================
+
+-- 1. Base Revenue & Profit
+Total Revenue = SUM(fact_order_items[line_total])
+
+Total Cost = SUMX(fact_order_items, fact_order_items[quantity] * RELATED(dim_products[cost_price]))
+
+Total Profit = [Total Revenue] - [Total Cost]
+
+Gross Profit Margin % = DIVIDE([Total Profit], [Total Revenue], 0)
+
+-- 2. Volume & Customer KPIs
+Total Orders = DISTINCTCOUNT(fact_orders[order_id])
+
+Total Customers = DISTINCTCOUNT(dim_customers[customer_id])
+
+Average Order Value (AOV) = DIVIDE([Total Revenue], [Total Orders], 0)
+
+Repeat Customers = 
+CALCULATE(
+    DISTINCTCOUNT(fact_orders[customer_id]),
+    FILTER(
+        VALUES(fact_orders[customer_id]),
+        CALCULATE(DISTINCTCOUNT(fact_orders[order_id])) > 1
+    )
+)
+
+Repeat Purchase Rate % = DIVIDE([Repeat Customers], [Total Customers], 0)
+
+-- 3. Time Intelligence (MoM & YoY)
+Revenue Prior Month = 
+CALCULATE(
+    [Total Revenue],
+    DATEADD(fact_orders[order_date], -1, MONTH)
+)
+
+Revenue MoM Growth % = 
+DIVIDE(
+    [Total Revenue] - [Revenue Prior Month],
+    [Revenue Prior Month],
+    0
+)
+
+-- 4. Customer Lifetime Value (CLV)
+Estimated Customer Lifetime Value = 
+VAR AvgValue = [Average Order Value (AOV)]
+VAR AvgFreq = DIVIDE([Total Orders], [Total Customers], 1)
+VAR MarginRate = [Gross Profit Margin %]
+VAR LifespanMultiplier = 1.6
+RETURN
+AvgValue * AvgFreq * MarginRate * LifespanMultiplier
+
+-- 5. RFM Segment Filter
+Customer Segment = 
+VAR R = SELECTEDVALUE(dim_customers[r_score])
+VAR F = SELECTEDVALUE(dim_customers[f_score])
+VAR M = SELECTEDVALUE(dim_customers[m_score])
+RETURN
+SWITCH(
+    TRUE(),
+    R >= 4 && F >= 4 && M >= 4, "Champions",
+    R >= 3 && F >= 3, "Loyal",
+    R >= 4 && F <= 2, "Potential Loyalists",
+    R <= 2 && F >= 3, "At Risk",
+    "Lost"
+)
