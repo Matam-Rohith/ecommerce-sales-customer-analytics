@@ -89,6 +89,26 @@ An enterprise-grade, full-stack Business Intelligence & Customer Analytics platf
 
 ---
 
+## 🌐 Deploying to GitHub Pages
+
+This app is configured to build and deploy to GitHub Pages automatically:
+
+### Option A: Automated GitHub Actions (Recommended)
+1. Push this repository to GitHub.
+2. Go to your repository **Settings** → **Pages**.
+3. Under **Build and deployment** → **Source**, select **GitHub Actions**.
+4. The workflow in `.github/workflows/deploy.yml` will automatically build the Vite app and publish it to `https://<username>.github.io/<repo-name>/`.
+
+### Option B: Manual Deploy via CLI
+```bash
+npm run deploy
+```
+*(This builds the static bundle and pushes it to your `gh-pages` branch).*
+
+> **Note on Static Hosting:** GitHub Pages is a static host (no Node.js server). The app has an embedded client-side analytics database fallback (`src/services/localDatabase.ts`) so that all 9 dashboard tabs, interactive filters, RFM models, charts, and forecasts work in the browser without requiring a backend server.
+
+---
+
 ## 🏃 Quick Start (Docker)
 
 ```bash
