@@ -89,6 +89,34 @@ An enterprise-grade, full-stack Business Intelligence & Customer Analytics platf
 
 ---
 
+## ⚡ Deploying to Vercel
+
+RetailIQ is pre-configured for one-click deployment on [Vercel](https://vercel.com/):
+
+### Option A: Via Vercel Web Dashboard (Recommended)
+1. Go to [Vercel Dashboard](https://vercel.com/new).
+2. Click **Add New...** → **Project**, and select your GitHub repository (`ecommerce-sales-customer-analytics`).
+3. Vercel automatically detects the preset from `vercel.json`:
+   - **Framework Preset**: `Vite`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+4. *(Optional)* Add Environment Variable:
+   - `GEMINI_API_KEY`: *(Optional, for live Gemini AI Executive briefings)*
+5. Click **Deploy**.
+
+### Option B: Via Vercel CLI
+```bash
+npm i -g vercel
+vercel
+```
+
+The configuration in `vercel.json` and `api/index.js` handles:
+- **Serverless API routing**: Routes all `/api/*` requests to the Express engine.
+- **Client-Side SPA rewrites**: Prevents 404 errors on page reloads and deep links.
+- **Automatic Fallback**: If backend functions encounter cold starts or limits, the built-in client analytics engine (`localDb`) keeps the UI and charts active.
+
+---
+
 ## 🌐 Deploying to GitHub Pages
 
 This app is configured to build and deploy to GitHub Pages automatically:
